@@ -1,28 +1,26 @@
 <?php
-$id = $_GET['id'];
-
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "tabel php";
+$dbname = "studikasus";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "DELETE FROM tabel_penduduk WHERE id = $id";
+$id = $_GET['id'] ?? '';
+
+// Perhatikan huruf besar 'ID' disesuaikan dengan kolom primary key database baru
+$sql = "DELETE FROM tabel_pendidikan WHERE ID = $id";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Record with id = $id deleted successfully";
+    header("Location: index.php");
+    exit();
 } else {
-    echo "Error: " . $sql . "<br>" . $conn->error;
+    echo "Error deleting record: " . $conn->error;
 }
 
 $conn->close();
-
-header("Location: index.php");
 ?>

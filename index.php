@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "tabel php";
+$dbname = "studikasus";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -10,7 +10,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM tabel_penduduk";
+// Mengambil data dari tabel_pendidikan
+$sql = "SELECT * FROM tabel_pendidikan";
 $result = $conn->query($sql);
 ?>
 
@@ -18,7 +19,7 @@ $result = $conn->query($sql);
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Web GIS & Tabel Data Penduduk</title>
+    <title>Web GIS & Tabel Fasilitas Pendidikan</title>
     
     <!-- Leaflet CSS Library -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css">
@@ -41,16 +42,14 @@ $result = $conn->query($sql);
         .container {
             display: flex;
             flex: 1;
-            /* Mengubah arah susunan dari samping ke bawah (vertikal) */
             flex-direction: column; 
-            height: calc(100vh - 50px);
         }
-        /* Peta berada di atas dengan ukuran lebih dominan (65%) */
+        /* Peta di atas dan lebih dominan (65%) */
         #map {
             width: 100%;
             height: 65%;
         }
-        /* Sidebar/Tabel berada di bawah dengan ukuran 35% */
+        /* Tabel di bawah (35%) dengan scroll vertikal */
         #sidebar {
             width: 100%;
             height: 35%;
@@ -106,47 +105,51 @@ $result = $conn->query($sql);
 <body>
 
     <header>
-        <strong>Web GIS Persebaran Penduduk & Peta Interaktif</strong>
+        <strong>Web GIS Persebaran Fasilitas Pendidikan & Peta Interaktif</strong>
     </header>
 
     <div class="container">
-        <!-- Bagian Peta Web GIS LeafletJS -->
+        <!-- Bagian Peta Web GIS LeafletJS di Atas -->
         <div id="map"></div>
 
-        <!-- Bagian Sidebar / Tabel Penduduk -->
+        <!-- Bagian Tabel Atribut di Bawah -->
         <div id="sidebar">
             <?php
-            echo "<a href='input/index.html' class='input-link'>Input</a>";
+            // Link menuju folder input
+            echo "<a href='input/index.html' class='input-link'>Input Data Baru</a>";
 
             $markers = [];
 
             if ($result->num_rows > 0) {
-                echo "<table border='1px'>
+                echo "<table>
                 <tr>
                     <th>ID</th>
                     <th>Kecamatan</th>
+                    <th>Nama Objek</th>
+                    <th>Jenjang Pendidikan</th>
+                    <th>Jalur Pendidikan</th>
                     <th>Longitude</th>
                     <th>Latitude</th>
-                    <th>Luas</th>
-                    <th>Jumlah Penduduk</th>
                     <th class='text-center'>Aksi</th>
                 </tr>";
                 
                 while($row = $result->fetch_assoc()) {
-                    $id_data = $row["id"];
+                    $id_data = $row["ID"]; // Kolom primary key database
                     echo "<tr>";
-                    echo "<td>" . $row["id"] . "</td>";
+                    echo "<td>" . $row["ID"] . "</td>";
                     echo "<td>" . $row["Kecamatan"] . "</td>";
+                    echo "<td>" . $row["Nama Objek"] . "</td>";
+                    echo "<td>" . $row["Jenjang Pendidikan"] . "</td>";
+                    echo "<td>" . $row["Jalur Pendidikan"] . "</td>";
                     echo "<td>" . $row["Longitude"] . "</td>";
                     echo "<td>" . $row["Latitude"] . "</td>";
-                    echo "<td>" . $row["Luas"] . "</td>";
-                    echo "<td>" . $row["Jumlah Penduduk"] . "</td>";
                     echo "<td class='text-center'>
                             <a href='edit/index.php?id=$id_data' class='edit-btn'>Edit</a> | 
-                            <a href='delete.php?id=$id_data' class='delete-btn' onclick='return confirm(\"Yakin ingin menghapus data ini?\")'>Delete</a>
-                        </td>";
+                            <a href='delete.php?id=$id_data' class='delete-btn' onclick='return confirm(\"Yakin ingin menghapus data ini?\")'>Hapus</a>
+                            </td>";
                     echo "</tr>"; 
 
+                    // Simpan data ke dalam array untuk ditarik ke peta JavaScript
                     $markers[] = $row;
                 }
                 
@@ -162,8 +165,8 @@ $result = $conn->query($sql);
     <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
 
     <script>
-        /* Initial Map */
-        var map = L.map('map').setView([-7.7500, 110.3000], 11);
+        /* Initial Map (Berpusat di wilayah Bantul/Yogyakarta) */
+        var map = L.map('map').setView([-7.9500, 110.3000], 11);
 
         /* Tile Basemap 1: Esri Imagery */
         var basemap1 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -180,19 +183,20 @@ $result = $conn->query($sql);
         // Menambahkan basemap default ke peta
         basemap1.addTo(map);
 
-        // Layer Group untuk menampung marker dari database tabel_penduduk
+        // Layer Group untuk menampung marker dari database tabel_pendidikan
         var markerLayer = L.layerGroup();
 
         <?php 
+        // Looping data dari PHP ke JavaScript Leaflet sesuai kolom tabel_pendidikan
         foreach ($markers as $m) {
             $lat = $m['Latitude'];
             $lng = $m['Longitude'];
-            $nama = $m['Kecamatan'];
-            $luas = $m['Luas'];
-            $penduduk = $m['Jumlah Penduduk'];
+            $nama_objek = addslashes($m['Nama Objek']);
+            $kecamatan = addslashes($m['Kecamatan']);
+            $jenjang = addslashes($m['Jenjang Pendidikan']);
             
             echo "var marker = L.marker([$lat, $lng]);";
-            echo "marker.bindPopup('<b>Kecamatan: $nama</b><br>Luas: $luas km²<br>Jumlah Penduduk: $penduduk');";
+            echo "marker.bindPopup('<b>$nama_objek</b><br>Kecamatan: $kecamatan<br>Jenjang: $jenjang');";
             echo "markerLayer.addLayer(marker);";
         }
         ?>
@@ -206,7 +210,7 @@ $result = $conn->query($sql);
         };
 
         var overlayMaps = {
-            "Titik Kecamatan": markerLayer
+            "Titik Fasilitas Pendidikan": markerLayer
         };
 
         L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);

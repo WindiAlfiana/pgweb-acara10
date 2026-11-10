@@ -4,26 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Input</title>
+    <title>Form Input Fasilitas Pendidikan</title>
 </head>
 
 <body>
-    <h2>Form Input</h2>
+    <h2>Form Input Fasilitas Pendidikan</h2>
     <form action="input.php" onsubmit="return validateForm()" method="post">
         <label for="kecamatan">Kecamatan:</label><br>
         <input type="text" id="kec" name="kecamatan" value=""><br>
+
+        <label for="nama_objek">Nama Objek:</label><br>
+        <input type="text" id="nama_objek" name="nama_objek" value=""><br>
+
+        <label for="jenjang_pendidikan">Jenjang Pendidikan:</label><br>
+        <input type="text" id="jenjang" name="jenjang_pendidikan" value=""><br>
+
+        <label for="jalur_pendidikan">Jalur Pendidikan:</label><br>
+        <input type="text" id="jalur" name="jalur_pendidikan" value=""><br>
 
         <label for="longitude">Longitude:</label><br>
         <input type="text" id="long" name="longitude" value=""><br>
 
         <label for="latitude">Latitude:</label><br>
-        <input type="text" id="lat" name="latitude" value=""><br>
-
-        <label for="luas">Luas:</label><br>
-        <input type="text" id="luas" name="luas" value=""><br>
-
-        <label for="jumlah_penduduk">Jumlah Penduduk:</label><br>
-        <input type="text" id="jml_ppdk" name="jumlah_penduduk" value=""><br><br>
+        <input type="text" id="lat" name="latitude" value=""><br><br>
 
         <input type="submit" value="Submit">
     </form>
@@ -31,13 +34,20 @@
 
     <script>
         function validateForm() {
-            let luas = document.getElementById("luas").value;
+            let longitude = document.getElementById("long").value;
+            let latitude = document.getElementById("lat").value;
             let text = "";
-            if (isNaN(luas) || luas < 1) {
-                text = "Data luas harus angka dan tidak boleh bernilai negatif";
+
+            // Contoh validasi sederhana untuk memastikan koordinat berupa angka
+            if (isNaN(longitude) || isNaN(latitude)) {
+                text = "Longitude dan Latitude harus berupa angka!";
                 event.preventDefault();
+                document.getElementById("informasi").innerHTML = text;
+                return false;
             }
-            document.getElementById("informasi").innerHTML = text;
+            
+            document.getElementById("informasi").innerHTML = "";
+            return true;
         }
     </script>
 </body>
